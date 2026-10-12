@@ -5,11 +5,13 @@
 
 Integrated project covering KM-04 (Data, Databases and Data Visualisation) and KM-05 (Programming and Python).
 
-## Project Overview
+## 1. Project Overview
 
-This project cleans and analyses sales data for Thabo's Corner Store. The goal is to prepare reliable data, store it in a database, identify useful business insights, create charts, and demonstrate basic data security.
+This project cleans and analyses sales data for Thabo's Corner Store. It uses Python to clean data, SQLite to store and query records, programming logic to calculate sales insights, Matplotlib to create charts, and password hashing to demonstrate basic access control.
 
-## Folder Structure
+The aim is to help the store understand product revenue, sales trends, and possible areas for improvement.
+
+## 2. Folder Structure
 
 ```text
 thabos-corner-store/
@@ -24,142 +26,227 @@ thabos-corner-store/
 │   ├── database.py
 │   ├── analysis.py
 │   ├── visualize.py
-│   └── security.py
+│   ├── security.py
+│   ├── store.db
+│   ├── revenue_per_product.png
+│   └── monthly_trend.png
 ├── PLAN.md
 └── .gitignore
 ```
 
-## Requirements and Setup
+## 3. Requirements and Setup
 
+Requirements:
 - Python 3.10 or later
-- Git
 - Visual Studio Code
-- The Python packages listed in `requirements.txt`
+- Git
+- pandas
+- matplotlib
 
-Open a terminal in the project root folder and install the required packages:
+Open a terminal in the project root and install the required packages:
 
 ```bash
 python -m pip install -r starter_code/requirements.txt
 ```
 
-Run the program from the project root when the pipeline is complete:
+Run the program from the `starter_code` folder:
 
 ```bash
-python starter_code/main.py
+cd starter_code
+python main.py
 ```
 
-## Task 2: Data Cleaning
+The program asks for a password before displaying the reports. For this learning project, the sample password is `Thabo2026!`.
 
-The raw CSV files contain deliberate data-quality problems. The cleaning functions are in `data_cleaning.py`.
+The program creates or updates `store.db` and generates two PNG chart files.
+
+## 4. Task 2: Data Cleaning
+
+The raw CSV files contain deliberate data-quality problems. The cleaning functions are implemented in `data_cleaning.py`.
 
 ### Product Data Cleaning
 
-The raw products file contains 16 rows.
+The original products file contained 16 rows. After cleaning, 12 rows remained.
 
 The cleaning process:
-- Removes products with missing product IDs, names, or prices.
-- Converts invalid product prices to missing values before removing unusable product records.
+- Removes records with missing product IDs, names, or prices.
+- Converts product prices to numeric values.
 - Removes blank product IDs and product names.
 - Removes unnecessary spaces from text fields.
-- Standardises category capitalisation, for example, `beverages` becomes `Beverages`.
+- Standardises category capitalisation.
 - Removes exact duplicate rows.
 
-**Cleaning results:** 16 raw product rows were reduced to 12 cleaned product rows.
+Four product rows were removed. These included products with missing prices, a product with a missing name, and an exact duplicate.
 
-Three product records were removed because they contained missing information:
-- P006 — Sunlight Dishwashing Liquid had no unit price.
-- P009 — the product name was missing.
-- P013 — Lays Chips 100g had no unit price.
-
-One additional exact duplicate row was removed.
-
-Products with missing prices were not assigned guessed prices because incorrect prices could produce inaccurate revenue calculations. The product with the missing name was removed because it could not be reliably identified.
+Missing prices were not guessed because incorrect prices could lead to inaccurate revenue calculations. The product with the missing name was removed because it could not be reliably identified.
 
 ### Sales Data Cleaning
 
-The raw sales file contains 71 records.
+The original sales file contained 71 records. After cleaning, 43 records remained.
 
 The cleaning process:
-- Converts supported date formats into the standard `YYYY-MM-DD` format.
-- Removes sales with missing or invalid dates because they cannot be reliably used in date-based sales analysis.
+- Converts supported date formats to `YYYY-MM-DD`.
+- Removes sales with missing or invalid dates.
 - Converts quantities to numeric values.
-- Removes rows with missing, invalid, zero, negative, or non-whole-number quantities.
-- Removes sales with missing product IDs.
-- Removes sales that reference product IDs that do not exist in the cleaned products data.
-- Replaces missing or blank payment methods with `Unknown`.
-- Replaces missing or blank customer types with `Unknown`.
+- Removes missing, invalid, zero, negative, and non-whole-number quantities.
+- Removes missing product IDs and references to products that do not exist in the cleaned product data.
+- Replaces missing payment methods and customer types with `Unknown`.
 - Removes exact duplicate rows.
 
-**Cleaning results:** 71 raw sales records were reduced to 43 cleaned sales records.
+Missing payment methods and customer types were labelled `Unknown` instead of being guessed. This preserves otherwise usable records while showing that the information was unavailable.
 
-Missing payment methods and customer types are labelled `Unknown` instead of being guessed. This preserves otherwise usable sales records while clearly showing that the original information was unavailable.
+### Data Cleaning Verification
 
-Sales with missing dates or unusable quantities were removed because those records could not be used reliably in the planned analysis. Sales referring to invalid product IDs were removed to ensure that sales can be linked to existing products.
-
-### Task 2 Verification
-
-The cleaning functions were tested using the original CSV files.
-
-The latest test confirmed:
-- 12 cleaned product rows.
-- 43 cleaned sales rows.
-- No missing values in the cleaned sales columns.
-- No exact duplicate rows in the cleaned sales data.
+The program reported:
+- 16 raw product rows reduced to 12 cleaned rows.
+- 71 raw sales records reduced to 43 cleaned records.
+- No missing values in the cleaned data.
+- No exact duplicate rows in the cleaned data.
 - No invalid product references in the cleaned sales data.
-- No invalid quantities in the cleaned sales data.
-- Dates converted to the standard `YYYY-MM-DD` format.
 
-The cleaning functions return cleaned copies of the data rather than intentionally modifying the original DataFrames.
+## 5. Task 3: Database and SQL
 
-## Task 3: Database and SQL
+The database is implemented in `database.py` using SQLite.
 
-This section will be completed after the SQLite database is implemented and tested.
+It contains two relational tables:
 
-It will document:
-- The database tables and their primary and foreign keys.
-- How the cleaned products and sales are inserted.
-- At least five SQL queries.
-- The query results and what they show about the business.
+### Products table
 
-## Task 4: Python Analysis
+- `product_id`: primary key.
+- `product_name`: product name.
+- `category`: product category.
+- `unit_price`: price per unit.
 
-This section will be completed after the analysis functions are implemented and tested.
+### Sales table
 
-It will explain the calculations and business insights produced using Python functions, loops, conditionals, lists, and dictionaries.
+- `sale_id`: primary key.
+- `product_id`: foreign key referencing the products table.
+- `quantity`: number of units sold.
+- `sale_date`: date of the sale.
+- `payment_method`: payment method used.
+- `customer_type`: type of customer.
 
-## Task 5: Data Visualisation
+Primary keys identify records. The foreign key links sales to existing products. SQLite foreign-key enforcement is enabled in the database connection.
 
-This section will be completed after the charts are generated and checked.
+### SQL Queries
 
-The project requires:
-- A bar chart showing revenue by product or category.
-- A line chart showing the monthly sales trend.
+The project implements five SQL query functions:
 
-The final README will describe the charts and the patterns they reveal.
+1. **Revenue per product:** Joins sales and products and calculates revenue using quantity multiplied by unit price.
+2. **Best-selling product:** Calculates the total quantity sold for each product and identifies the highest quantity.
+3. **Sales by payment method:** Counts transactions for each payment method.
+4. **Revenue by category:** Groups products by category and calculates total revenue.
+5. **Customer types in February 2026:** Counts transactions for each customer type during February.
 
-## Task 6: Security
+The revenue-per-product query returned the following results in the program's test run:
 
-This section will be completed after the security functionality is implemented and tested.
+| Product | Revenue |
+|---|---:|
+| 5kg Maize Meal | R801.00 |
+| Eggs (6 pack) | R364.00 |
+| Bar One Chocolate | R224.00 |
+| Sugar 1kg | R220.50 |
+| Coca-Cola 500ml | R148.00 |
+| Airtime Voucher R10 | R140.00 |
+| Simba Chips 120g | R132.00 |
+| Full Cream Milk 1L | R129.00 |
+| Fanta Orange 500ml | R111.00 |
+| Data Bundle 1GB | R98.00 |
+| Coca-Cola 500ml | R74.00 |
+| White Bread 700g | R48.00 |
 
-It will document the password-hashing approach and include a 150–250 word reflection on the confidentiality, integrity, and availability (CIA) triad.
+The revenue figures are calculated from the cleaned sales records and product prices. The two Coca-Cola entries should be checked against their product IDs to confirm whether they represent separate product records.
 
-## Business Insights
+## 6. Task 4: Python Analysis
 
-This section will be completed after the database queries and Python analysis have been tested. It will summarise the most important findings and explain how they could help the store make business decisions.
+The analysis functions are implemented in `analysis.py`. They demonstrate functions, loops, conditionals, lists, dictionaries, and calculations.
 
-The final business-insights section must contain 200–300 words, based on the actual results produced by the program.
+The program performs these tasks:
+- Counts the cleaned sales records.
+- Identifies products that meet the low-stock alert conditions.
+- Calculates the total quantity sold in each month.
+- Classifies transactions as Single, Multiple, Bulk, or Invalid.
+- Calculates the average quantity per sales record.
 
-## Final Submission Checklist
+### Verified Analysis Results
 
-Before submitting, check the project brief and ensure the submission contains all required files, including:
+| Measurement | Result |
+|---|---:|
+| Cleaned sales records | 43 |
+| January 2026 quantity sold | 52 |
+| February 2026 quantity sold | 44 |
+| Average quantity per sales record | 2.23 |
+| Low-stock alert | Data Bundle 1GB |
+
+The average basket size is calculated as the average quantity per sales record. It is not a monetary average of customer spending.
+
+The monthly trend is based on quantities sold, not revenue.
+
+## 7. Task 5: Data Visualisation
+
+The chart functions are implemented in `visualize.py` using Matplotlib.
+
+### Revenue per Product
+
+File: `revenue_per_product.png`
+
+This bar chart compares the revenue generated by each product. In the verified output, 5kg Maize Meal generated the highest displayed product revenue at R801.00. This can help the store identify products that contribute strongly to sales revenue.
+
+### Monthly Sales Trend
+
+File: `monthly_trend.png`
+
+This line chart shows the total quantity sold in each month.
+
+The analysis reported:
+- January 2026: 52 units.
+- February 2026: 44 units.
+
+The quantity sold decreased by 8 units from January to February. The store could investigate whether this change relates to product availability, customer demand, or other factors.
+
+Both charts were generated successfully when `python main.py` was tested.
+
+## 8. Task 6: Security and the CIA Triad
+
+The security functions are implemented in `security.py`.
+
+The program uses Python's `hashlib` library to create a SHA-256 hash of the sample password. When a user enters a password, the program hashes the attempt and compares the resulting hash with the stored hash. The login gate allows up to three attempts.
+
+The security functions were tested successfully: the correct sample password returned `True`, an incorrect password returned `False`, and the hash contained 64 hexadecimal characters.
+
+### CIA Triad Reflection
+
+**Confidentiality:** Confidentiality means that information should only be available to authorised people. The password gate helps protect the sales reports by requiring a password before the program displays them. Hashing means that the sample password is not stored directly as plain text. However, this simple gate is only a learning demonstration and is not complete protection for a real business system.
+
+**Integrity:** Integrity means that data remains accurate and is not changed incorrectly or without permission. The database supports integrity through primary keys, which identify records, and a foreign key that links each sale to an existing product. Required fields and suitable data types also help reduce invalid records. More validation and controlled database permissions would improve protection further.
+
+**Availability:** Availability means that authorised users can access information when they need it. If the laptop is damaged, stolen, or infected with malware, the database and reports could become unavailable. Regular backups stored in a separate secure location would reduce this risk. The backups should also be tested to confirm that the data can be restored.
+
+## 9. Business Insights
+
+The cleaned data provides a clearer view of the store's sales. The original files contained missing information, duplicate records, invalid dates, and sales linked to product IDs that were not valid. After cleaning, the project retained 12 product records and 43 sales records. This gives the analysis a more reliable starting point.
+
+The revenue-per-product query showed that 5kg Maize Meal generated the highest displayed revenue, at R801.00. Eggs (6 pack) followed at R364.00, while Bar One Chocolate generated R224.00. The store could make sure that popular products remain available and monitor whether their prices and costs support good profit margins. Revenue alone does not show profit because the cost of buying each product is not included.
+
+The monthly analysis recorded 52 units sold in January 2026 and 44 units in February 2026. This is a decrease of eight units. The owner could compare future months to see whether this is a continuing pattern. Two months of data are not enough to prove a long-term decline.
+
+The average quantity per sales record was 2.23 units. This may help the owner understand how many units are sold per transaction, but it does not show average spending per customer. The program also flagged Data Bundle 1GB for a low-stock alert under the current analysis rules. The owner should verify the stock information before ordering more.
+
+Overall, the system demonstrates how cleaning data, using a relational database, analysing records, and creating charts can support better store decisions. Adding stock counts, product costs, and more months of sales would allow more detailed analysis.
+
+## 10. Final Submission Checklist
+
+Before submitting, check the project brief and confirm that the submission contains:
 
 - [ ] `PLAN.md`
 - [ ] The complete `starter_code/` folder
-- [ ] Updated README documentation
-- [ ] The two generated PNG charts
-- [ ] The SQLite database file (`store.db`)
+- [ ] Updated `starter_code/README.md`
+- [ ] `revenue_per_product.png`
+- [ ] `monthly_trend.png`
+- [ ] `store.db`
 - [ ] `SUBMISSION.txt`
 - [ ] A ZIP file containing the required submission files
 - [ ] A GitHub repository with at least eight meaningful commits
 
-Only document database results, charts, and business insights after they have been generated and verified. Do not invent results.
+The final ZIP should contain the required project files and generated outputs. Check the project brief for any additional submission instructions.
+
